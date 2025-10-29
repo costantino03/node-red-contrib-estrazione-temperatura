@@ -1,1 +1,60 @@
-module.exports = function(RED) {\n  function ExtractEventStateNode(config) {\n    RED.nodes.createNode(this, config);\n    var node = this;\n    node.name = config.name;\n    node.passThrough = !!config.passThrough;\n\n    node.on('input', function(msg, send, done) {\n      try {\n        // Trova i dati dell'evento (compatibile con HA events)\n        var data = msg.data || (msg.payload && msg.payload.data) || msg.payload;\n\n        var newState = null;\n        if (data && typeof data === 'object' && data.new_state !== undefined) {\n          newState = data.new_state;\n        } else {\n          newState = data;\n        }\n\n        // Messaggio 1: msg con data aggiornato\n        var out1 = RED.util.cloneMessage(msg);\n        out1.data = newState;\n        out1.payload = newState;\n        out1.topic = out1.topic || 'new_state';\n\n        // Messaggio 2: originale (opzionale)\n        var out2 = null;\n        if (node.passThrough) {\n          out2 = RED.util.cloneMessage(msg);\n        }\n\n        if (send) {\n          send([out1, out2]);\n        } else {\n          node.send([out1, out2]);\n        }\n\n        node.status({fill:"green",shape:"dot",text:"ok"});\n        if (done) done();\n      } catch (err) {\n        node.status({fill:"red",shape:"ring",text:"error"});\n        node.error("Error extracting event state: " + err.message, msg);\n        if (done) done(err);\n      }\n    });\n\n    node.on('close', function() {\n      node.status({});\n    });\n  }\n  RED.nodes.registerType("extract-event-state", ExtractEventStateNode);\n}
+module.exports = function (RED) {
+    function ExtractEventStateNode(config) {
+        RED.nodes.createNode(this, config);
+        var node = this;
+        node.name = config.name;
+        node.passThrough = !!config.passThrough;
+
+        node.on('input', function (msg, send, done) {
+            try {
+                // Trova i dati dell'evento (compatibile con HA events)
+                var data = msg.data || (msg.payload && msg.payload.data) || msg.payload;
+
+                var newState = null;
+                if (data && typeof data === 'object' && data.new_state !== undefined) {
+                    newState = data.new_state;
+                } else {
+                    newState = data;
+                }
+
+                // Messaggio 1: msg con data aggiornato
+                var out1 = RED.util.cloneMessage(msg);
+                out1.data = newState;
+                out1.payload = newState;
+                out1.topic = out1.topic || 'new_state';
+
+                // Messaggio 2: originale (opzionale)
+                var out2 = null;
+                if (node.passThrough) {
+                    out2 = RED.util.cloneMessage(msg);
+                }
+
+                if (send) {
+                    send([out1, out2]);
+                } else {
+                    node.send([out1, out2]);
+                }
+
+                node.status({
+                    fill: "green",
+                    shape: "dot",
+                    text: "ok"
+                });
+                if (done) done();
+            } catch (err) {
+                node.status({
+                    fill: "red",
+                    shape: "ring",
+                    text: "error"
+                });
+                node.error("Error extracting event state: " + err.message, msg);
+                if (done) done(err);
+            }
+        });
+
+        node.on('close', function () {
+            node.status({});
+        });
+    }
+    RED.nodes.registerType("extract-event-state", ExtractEventStateNode);
+}

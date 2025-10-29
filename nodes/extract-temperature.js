@@ -1,1 +1,70 @@
-module.exports = function(RED) {\n  function ExtractTemperatureNode(config) {\n    RED.nodes.createNode(this, config);\n    var node = this;\n    node.name = config.name;\n    node.source = config.source || "auto";\n\n    node.on('input', function(msg, send, done) {\n      try {\n        // Determina la sorgente dati\n        var data = null;\n        if (node.source === "msg.data") {\n          data = msg.data;\n        } else if (node.source === "msg.payload") {\n          data = msg.payload;\n        } else {\n          data = msg.data || (msg.payload && msg.payload.data) || msg.payload;\n        }\n\n        // Estrai attributi\n        var currentTemp = null;\n        var setpoint = null;\n\n        if (data && typeof data === 'object') {\n          var attrs = data.attributes || data;\n          if (attrs && typeof attrs === 'object') {\n            if (attrs.current_temperature !== undefined) currentTemp = attrs.current_temperature;\n            if (attrs.temperature !== undefined) setpoint = attrs.temperature;\n          }\n        }\n\n        // Prepara messaggi per le due uscite (cloniamo per sicurezza)\n        var out1 = RED.util.cloneMessage(msg);\n        var out2 = RED.util.cloneMessage(msg);\n\n        out1.payload = currentTemp;\n        out1.topic = out1.topic || 'current_temperature';\n        out2.payload = setpoint;\n        out2.topic = out2.topic || 'setpoint';\n\n        // invia sempre due output (null se non trovato)\n        if (send) {\n          send([out1, out2]);\n        } else {\n          node.send([out1, out2]);\n        }\n\n        node.status({fill:"green",shape:"dot",text:(currentTemp!==null?"ok":"no-temp")});\n        if (done) done();\n      } catch (err) {\n        node.status({fill:"red",shape:"ring",text:"error"});\n        node.error("Error extracting temperature: " + err.message, msg);\n        if (done) done(err);\n      }\n    });\n\n    node.on('close', function() {\n      node.status({});\n    });\n  }\n  RED.nodes.registerType("extract-temperature", ExtractTemperatureNode);\n}
+module.exports = function (RED) {
+    function ExtractTemperatureNode(config) {
+        RED.nodes.createNode(this, config);
+        var node = this;
+        node.name = config.name;
+        node.source = config.source || "auto";
+
+        node.on('input', function (msg, send, done) {
+            try {
+                // Determina la sorgente dati
+                var data = null;
+                if (node.source === "msg.data") {
+                    data = msg.data;
+                } else if (node.source === "msg.payload") {
+                    data = msg.payload;
+                } else {
+                    data = msg.data || (msg.payload && msg.payload.data) || msg.payload;
+                }
+
+                // Estrai attributi
+                var currentTemp = null;
+                var setpoint = null;
+
+                if (data && typeof data === 'object') {
+                    var attrs = data.attributes || data;
+                    if (attrs && typeof attrs === 'object') {
+                        if (attrs.current_temperature !== undefined) currentTemp = attrs.current_temperature;
+                        if (attrs.temperature !== undefined) setpoint = attrs.temperature;
+                    }
+                }
+
+                // Prepara messaggi per le due uscite (cloniamo per sicurezza)
+                var out1 = RED.util.cloneMessage(msg);
+                var out2 = RED.util.cloneMessage(msg);
+
+                out1.payload = currentTemp;
+                out1.topic = out1.topic || 'current_temperature';
+                out2.payload = setpoint;
+                out2.topic = out2.topic || 'setpoint';
+
+                // invia sempre due output (null se non trovato)
+                if (send) {
+                    send([out1, out2]);
+                } else {
+                    node.send([out1, out2]);
+                }
+
+                node.status({
+                    fill: "green",
+                    shape: "dot",
+                    text: (currentTemp !== null ? "ok" : "no-temp")
+                });
+                if (done) done();
+            } catch (err) {
+                node.status({
+                    fill: "red",
+                    shape: "ring",
+                    text: "error"
+                });
+                node.error("Error extracting temperature: " + err.message, msg);
+                if (done) done(err);
+            }
+        });
+
+        node.on('close', function () {
+            node.status({});
+        });
+    }
+    RED.nodes.registerType("extract-temperature", ExtractTemperatureNode);
+}

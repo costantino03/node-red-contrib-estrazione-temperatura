@@ -1,1 +1,34 @@
-<script type="text/x-red" data-template-name="extract-event-state">\n  <div class="form-row">\n    <label for="node-input-name"><i class="icon-tag"></i> Name</label>\n    <input type="text" id="node-input-name" placeholder="Name">\n  </div>\n  <div class="form-row">\n    <label for="node-input-passThrough"><i class="icon-repeat"></i> Output original message</label>\n    <input type="checkbox" id="node-input-passThrough">\n  </div>\n  <div class="form-tips">\n    Estrae new_state da msg.data (o msg.payload.data). Uscita 1 = msg.data/new_state (a payload), Uscita 2 = messaggio originale (se abilitato).\n  </div>\n</script>\n\n<script type="text/javascript">\n  RED.nodes.registerType('extract-event-state', {\n    category: 'function',\n    color: '#DDAA99',\n    defaults: {\n      name: {value:""},\n      passThrough: {value:false}\n    },\n    inputs:1,\n    outputs:2,\n    icon: "file.png",\n    label: function() {\n      return this.name||"extract-event-state";\n    }\n  });\n</script>
+<script type="text/x-red" data-template-name="extract-event-state">
+    <div class="form-row">
+    <label for="node-input-name"><i class="icon-tag"></i> Name</label>
+    <input type="text" id="node-input-name" placeholder="Name">
+  </div>
+  <div class="form-row">
+    <label for="node-input-passThrough"><i class="icon-repeat"></i> Output original message</label>
+    <input type="checkbox" id="node-input-passThrough">
+  </div>
+  <div class="form-tips">
+    Estrae new_state da msg.data (o msg.payload.data). Uscita 1 = msg.data/new_state (a payload), Uscita 2 = messaggio originale (se abilitato).
+  </div>
+</script>
+
+<script type="text/javascript">
+    RED.nodes.registerType('extract-event-state', {
+        category: 'function',
+        color: '#DDAA99',
+        defaults: {
+            name: {
+                value: ""
+            },
+            passThrough: {
+                value: false
+            }
+        },
+        inputs: 1,
+        outputs: 2,
+        icon: "file.png",
+        label: function () {
+            return this.name || "extract-event-state";
+        }
+    });
+</script>
