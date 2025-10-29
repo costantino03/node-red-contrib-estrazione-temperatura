@@ -1,0 +1,66 @@
+name: Publish to npm
+
+on:
+    push:
+        branches: [main]
+    workflow_dispatch:
+        inputs:
+            version:
+                description: "Semver (e.g. 1.0.1) or bump type (patch|minor|major). If empty, a patch bump will be applied."
+                required: false
+
+jobs:
+    publish:
+        name: Publish package to npm
+        runs-on: ubuntu-latest
+        permissions:
+            contents: read
+            packages: write
+            id-token: write
+
+        steps:
+            - name: Checkout
+              uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+
+            - name: Use Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: "18"
+                  registry-url: "https://registry.npmjs.org"
+
+            - name: Configure npm auth
+              run: echo "//registry.npmjs.org/:_authToken=${{ secrets.NPM_TOKEN }}" > ~/.npmrc
+
+            - name: Determine publish version
+              id: ver
+              run: |
+                  if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+                    if [ -n "${{ github.event.inputs.version }}" ]; then
+                      echo "version=${{ github.event.inputs.version }}" >> $GITHUB_OUTPUT
+                    else
+                      echo "version=patch" >> $GITHUB_OUTPUT
+                    fi
+                  else
+                    # push on main -> auto patch bump
+                    echo "version=patch" >> $GITHUB_OUTPUT
+                  fi
+
+            - name: Bump package.json version (no git)
+              if: steps.ver.outputs.version != ''
+              run: |
+                  echo "Bumping package.json version with: ${{ steps.ver.outputs.version }}"
+                  npm version "${{ steps.ver.outputs.version }}" --no-git-tag-version
+
+            - name: Install dependencies
+              run: npm ci --prefer-offline --no-audit --progress=false
+
+            - name: Publish to npm
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  # for scoped packages set access public
+                  PUBLISH_ARGS=$(node -e "const name=require('./package.json').name; console.log(name && name.startsWith('@')? '--access public':'' )")
+                  echo "Publishing with args: $PUBLISH_ARGS"
+                  npm publish $PUBLISH_ARGS
