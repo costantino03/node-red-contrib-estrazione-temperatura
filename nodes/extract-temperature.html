@@ -1,5 +1,5 @@
 <script type="text/x-red" data-template-name="extract-temperature">
-    <div class="form-row">
+  <div class="form-row">
     <label for="node-input-name"><i class="icon-tag"></i> Name</label>
     <input type="text" id="node-input-name" placeholder="Name">
   </div>
@@ -11,28 +11,62 @@
       <option value="msg.payload">msg.payload</option>
     </select>
   </div>
+
   <div class="form-tips">
-    Uscita 1 = current_temperature, Uscita 2 = temperature (setpoint). Cerca attributes.current_temperature e attributes.temperature.
+    <strong>Descrizione</strong>: Estrae temperature da un oggetto stato/type climate (compatibile con Home Assistant). Cerca i campi <code>attributes.current_temperature</code> e <code>attributes.temperature</code>.
   </div>
+
+  <div class="form-tips">
+    <strong>Inputs</strong>:
+    <ul>
+      <li><code>msg.data</code> (preferito quando l'input proviene da extract-event-state o da eventi HA). Struttura attesa: un oggetto stato o un wrapper evento che contiene <code>attributes</code> con i campi delle temperature.</li>
+      <li><code>msg.payload</code>: se impostato come source = <em>msg.payload</em> oppure come fallback quando <code>msg.data</code> non è presente. Può essere direttamente l'oggetto stato oppure un wrapper con <code>data.new_state</code>.</li>
+      <li><code>msg.payload.data</code> o <code>msg.data.new_state</code> sono accettati quando il payload contiene un evento HA.</li>
+    </ul>
+  </div>
+
+  <div class="form-tips">
+    <strong>Outputs</strong> (due uscite):
+    <ol>
+      <li><strong>Uscita 1</strong>: payload = <code>current_temperature</code> (numero) o <code>null</code> se non trovato. topic suggerito: <code>current_temperature</code>. Esempio: <code>{ payload: 21.5 }</code>.</li>
+      <li><strong>Uscita 2</strong>: payload = <code>temperature</code> (setpoint, numero) o <code>null</code> se non trovato. topic suggerito: <code>setpoint</code>. Esempio: <code>{ payload: 22 }</code>.</li>
+    </ol>
+    In caso di valori non numerici (es. stringhe), il nodo non effettua coercizione automatica: valuta di pre-parsare con un nodo function se necessario.
+  </div>
+
+  <div class="form-tips">
+    <strong>Esempio di input JSON</strong> (use con extract-event-state):
+    <pre style="white-space:pre-wrap;">{
+  "data": {
+    "new_state": {
+      "attributes": {
+        "current_temperature": 21.5,
+        "temperature": 22
+      }
+    }
+  }
+}</pre>
+  </div>
+
 </script>
 
 <script type="text/javascript">
-    RED.nodes.registerType('extract-temperature', {
-        category: 'function',
-        color: '#a6bbcf',
-        defaults: {
-            name: {
-                value: ""
-            },
-            source: {
-                value: "auto"
-            }
-        },
-        inputs: 1,
-        outputs: 2,
-        icon: "thermometer.png",
-        label: function () {
-            return this.name || "extract-temperature";
-        }
-    });
+  RED.nodes.registerType('extract-temperature', {
+    category: 'function',
+    color: '#a6bbcf',
+    defaults: {
+      name: {
+        value: ""
+      },
+      source: {
+        value: "auto"
+      }
+    },
+    inputs: 1,
+    outputs: 2,
+    icon: "thermometer.png",
+    label: function () {
+      return this.name || "extract-temperature";
+    }
+  });
 </script>

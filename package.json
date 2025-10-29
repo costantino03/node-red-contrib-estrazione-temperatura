@@ -1,6 +1,6 @@
 {
   "name": "@costantino03/node-red-contrib-estrazione-temperatura",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Node-RED nodes per estrarre stato e temperature da eventi/entità climate di Home Assistant.",
   "main": "nodes/extract-temperature.js",
   "keywords": [

@@ -7,9 +7,44 @@
     <label for="node-input-passThrough"><i class="icon-repeat"></i> Output original message</label>
     <input type="checkbox" id="node-input-passThrough">
   </div>
+
   <div class="form-tips">
-    Estrae new_state da msg.data (o msg.payload.data). Uscita 1 = msg.data/new_state (a payload), Uscita 2 = messaggio originale (se abilitato).
+    <strong>Descrizione</strong>: Estrae <code>new_state</code> da un evento (tipicamente gli eventi di Home Assistant) e lo mette in <code>msg.data</code> e <code>msg.payload</code>.
   </div>
+
+  <div class="form-tips">
+    <strong>Inputs</strong>:
+    <ul>
+      <li><code>msg.payload</code> o <code>msg.data</code> che contengono l'evento HA. Struttura tipica: <code>{ data: { new_state: { /* state object */ } } }</code>.</li>
+      <li>Se l'input è già uno state object (non wrapper evento), il nodo lo usa direttamente.</li>
+    </ul>
+  </div>
+
+  <div class="form-tips">
+    <strong>Outputs</strong> (due uscite):
+    <ol>
+      <li><strong>Uscita 1</strong>: msg.payload = <code>new_state</code> (object). Inoltre <code>msg.data</code> viene impostato a <code>new_state</code>. Topic suggerito: <code>new_state</code>. Esempio: <code>{ payload: { entity_id: 'climate.salotto', state: 'heat', attributes: { current_temperature: 21.5 } } }</code>.</li>
+      <li><strong>Uscita 2</strong>: messaggio originale non modificato (solo se <code>passThrough</code> abilitato). Utile per debug o per catene che necessitano del messaggio intero.</li>
+    </ol>
+    Se <code>new_state</code> non è presente, il nodo passa il payload così com'è sull'uscita 1.
+  </div>
+
+  <div class="form-tips">
+    <strong>Esempio di input JSON</strong>:
+    <pre style="white-space:pre-wrap;">{
+  "data": {
+    "new_state": {
+      "entity_id": "climate.salotto",
+      "state": "heat",
+      "attributes": {
+        "current_temperature": 21.5,
+        "temperature": 22
+      }
+    }
+  }
+}</pre>
+  </div>
+
 </script>
 
 <script type="text/javascript">
