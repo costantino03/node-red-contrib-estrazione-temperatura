@@ -54,7 +54,7 @@ jobs:
                   npm version "${{ steps.ver.outputs.version }}" --no-git-tag-version
 
             - name: Install dependencies
-              run: npm ci --prefer-offline --no-audit --progress=false
+              run: npm install
 
             - name: Publish to npm
               env:
